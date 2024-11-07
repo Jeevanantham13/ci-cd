@@ -1,0 +1,11 @@
+replicaCount: 3
+
+image:
+  repository: your-docker-image-name
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 3000
