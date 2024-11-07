@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE = 'your-docker-image-name'
+        DOCKER_CREDENTIALS_ID = 'your-docker-credentials-id'
+        HELM_RELEASE_NAME = 'my-app-release'
+        HELM_CHART_PATH = 'helm/my-app'
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/Jeevanantham13/my-app.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
+                        docker.image(DOCKER_IMAGE).push("latest")
+                    }
+                }
+            }
+        }
+        stage('Deploy with Helm') {
+            steps {
+                script {
+                    // Helm install or upgrade
+                    sh "helm upgrade --install ${HELM_RELEASE_NAME} ${HELM_CHART_PATH} --set image.repository=${DOCKER_IMAGE} --set image.tag=latest"
+                }
+            }
+        }
+    }
+}
